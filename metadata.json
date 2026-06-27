@@ -1,0 +1,6 @@
+{
+  "name": "FinanzasPro",
+  "description": "Gestor de Negocios e Inventario avanzado con PostgreSQL, autenticación y mapa de clientes",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
