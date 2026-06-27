@@ -4,6 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FinanzasPro v5.0 - Gestor de Negocios Inteligente</title>
+    <script>
+      window.addEventListener('error', function(e) {
+        var root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="padding: 30px; max-width: 800px; margin: 50px auto; background: white; border: 1px solid #fca5a5; border-radius: 12px; font-family: system-ui, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">' +
+            '<h1 style="color: #dc2626; font-size: 20px; margin-top: 0; display: flex; items-center: center; gap: 8px;">❌ Error de Ejecución Detectado</h1>' +
+            '<p style="color: #4b5563; font-size: 14px;">La aplicación no se pudo cargar debido a un error de JavaScript o un archivo ausente:</p>' +
+            '<pre style="background: #fef2f2; color: #991b1b; padding: 16px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 13px; line-height: 1.5; border: 1px solid #fee2e2;">' +
+            (e.error ? (e.error.stack || e.error.message || e.error) : e.message) +
+            '</pre>' +
+            '<p style="color: #9ca3af; font-size: 11px; margin-bottom: 0;">Sugerencia: Intenta recargar la página o verifica la configuración de tu red. Si el error persiste, avísanos.</p>' +
+            '</div>';
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="padding: 30px; max-width: 800px; margin: 50px auto; background: white; border: 1px solid #fca5a5; border-radius: 12px; font-family: system-ui, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">' +
+            '<h1 style="color: #dc2626; font-size: 20px; margin-top: 0;">⚠️ Excepción de Promesa No Controlada</h1>' +
+            '<pre style="background: #fef2f2; color: #991b1b; padding: 16px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 13px; border: 1px solid #fee2e2;">' +
+            (e.reason ? (e.reason.stack || e.reason.message || e.reason) : 'Promesa rechazada de forma anónima') +
+            '</pre>' +
+            '</div>';
+        }
+      });
+    </script>
     <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <!-- Leaflet Map JS -->

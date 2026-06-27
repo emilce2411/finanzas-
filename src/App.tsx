@@ -173,12 +173,16 @@ export default function App() {
       setUser(null);
       setActiveTab("dashboard");
       setBizName("Mi Taller Gastronómico");
-      localStorage.removeItem(`es_biz_insumos_user_local-demo-user`);
-      localStorage.removeItem(`es_biz_recipes_user_local-demo-user`);
-      localStorage.removeItem(`es_biz_products_user_local-demo-user`);
-      localStorage.removeItem(`es_biz_transactions_user_local-demo-user`);
-      localStorage.removeItem(`es_biz_clients_user_local-demo-user`);
-      localStorage.removeItem(`es_biz_profile_user_local-demo-user`);
+      try {
+        localStorage.removeItem(`es_biz_insumos_user_local-demo-user`);
+        localStorage.removeItem(`es_biz_recipes_user_local-demo-user`);
+        localStorage.removeItem(`es_biz_products_user_local-demo-user`);
+        localStorage.removeItem(`es_biz_transactions_user_local-demo-user`);
+        localStorage.removeItem(`es_biz_clients_user_local-demo-user`);
+        localStorage.removeItem(`es_biz_profile_user_local-demo-user`);
+      } catch (storageErr) {
+        console.warn("Could not clear localStorage due to security restrictions:", storageErr);
+      }
     }
   };
 

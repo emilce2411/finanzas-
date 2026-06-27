@@ -1,5 +1,34 @@
 import { Insumo, Recipe, Product, Transaction, Client, User } from "../types.ts";
 
+const memoryStorage: Record<string, string> = {};
+
+const safeStorage = {
+  getItem(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn("localStorage.getItem blocked, falling back to memory:", e);
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem(key: string, value: string): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn("localStorage.setItem blocked, falling back to memory:", e);
+      memoryStorage[key] = value;
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn("localStorage.removeItem blocked, falling back to memory:", e);
+      delete memoryStorage[key];
+    }
+  }
+};
+
 let isLocalMode = false;
 let currentToken: string | null = null;
 let currentUserId = "local-demo-user";
@@ -28,7 +57,7 @@ export function getIsLocalMode() {
 
 export function getBizName() {
   if (isLocalMode) {
-    return localStorage.getItem(`es_biz_profile_user_${currentUserId}`) || "Emprendimiento Demo";
+    return safeStorage.getItem(`es_biz_profile_user_${currentUserId}`) || "Emprendimiento Demo";
   }
   return currentBizName;
 }
@@ -36,7 +65,7 @@ export function getBizName() {
 export function setBizNameLocally(name: string) {
   currentBizName = name;
   if (isLocalMode) {
-    localStorage.setItem(`es_biz_profile_user_${currentUserId}`, name);
+    safeStorage.setItem(`es_biz_profile_user_${currentUserId}`, name);
   }
 }
 
@@ -54,7 +83,7 @@ function getHeaders() {
 // Seeding standard local demo data to make sure Local Mode is also pre-loaded
 function ensureLocalDemoDataSeeded() {
   const keyCheck = `es_biz_insumos_user_${currentUserId}`;
-  if (!localStorage.getItem(keyCheck)) {
+  if (!safeStorage.getItem(keyCheck)) {
     const defaultInsumos: Insumo[] = [
       { id: 101, name: "Harina de Trigo", quantity: 15000, unit: "g", totalCost: 15, unitCost: 15 / 15000 },
       { id: 102, name: "Dulce de Leche", quantity: 8000, unit: "g", totalCost: 40, unitCost: 40 / 8000 },
@@ -62,7 +91,7 @@ function ensureLocalDemoDataSeeded() {
       { id: 104, name: "Chocolate de Cobertura", quantity: 2000, unit: "g", totalCost: 36, unitCost: 36 / 2000 },
       { id: 105, name: "Azúcar", quantity: 10000, unit: "g", totalCost: 10, unitCost: 10 / 10000 },
     ];
-    localStorage.setItem(keyCheck, JSON.stringify(defaultInsumos));
+    safeStorage.setItem(keyCheck, JSON.stringify(defaultInsumos));
 
     const defaultRecipes: Recipe[] = [
       {
@@ -81,13 +110,13 @@ function ensureLocalDemoDataSeeded() {
         ]
       }
     ];
-    localStorage.setItem(`es_biz_recipes_user_${currentUserId}`, JSON.stringify(defaultRecipes));
+    safeStorage.setItem(`es_biz_recipes_user_${currentUserId}`, JSON.stringify(defaultRecipes));
 
     const defaultProducts: Product[] = [
       { id: 301, recipeId: 201, name: "Alfajor Premium Maicena x Unid", stock: 36, price: 3.50, cost: 0.225 },
       { id: 302, recipeId: null, name: "Conito de Dulce de Leche x Unid", stock: 15, price: 2.80, cost: 0.90 }
     ];
-    localStorage.setItem(`es_biz_products_user_${currentUserId}`, JSON.stringify(defaultProducts));
+    safeStorage.setItem(`es_biz_products_user_${currentUserId}`, JSON.stringify(defaultProducts));
 
     const defaultTransactions: Transaction[] = [
       { id: 401, type: "purchase", amount: -125, description: "Compra inicial de materias primas (Local Offline)", date: "2026-06-25" },
@@ -95,15 +124,15 @@ function ensureLocalDemoDataSeeded() {
       { id: 403, type: "sale", amount: 84, description: "Venta: 24 Alfajores Premium (Local)", date: "2026-06-27" },
       { id: 404, type: "sale", amount: 42, description: "Venta: 15 Conitos de Dulce de Leche (Local)", date: "2026-06-27" },
     ];
-    localStorage.setItem(`es_biz_transactions_user_${currentUserId}`, JSON.stringify(defaultTransactions));
+    safeStorage.setItem(`es_biz_transactions_user_${currentUserId}`, JSON.stringify(defaultTransactions));
 
     const defaultClients: Client[] = [
       { id: 501, name: "Café de las Artes (Local)", phone: "+54 11 4455-8899", email: "artes@cafe.com", lat: -34.6037, lng: -58.3816 },
       { id: 502, name: "Panadería San José (Local)", phone: "+54 11 9988-7766", email: "contacto@sanjose.com", lat: -34.6150, lng: -58.4120 },
     ];
-    localStorage.setItem(`es_biz_clients_user_${currentUserId}`, JSON.stringify(defaultClients));
+    safeStorage.setItem(`es_biz_clients_user_${currentUserId}`, JSON.stringify(defaultClients));
 
-    localStorage.setItem(`es_biz_profile_user_${currentUserId}`, "Emprendimiento Demo (Offline)");
+    safeStorage.setItem(`es_biz_profile_user_${currentUserId}`, "Emprendimiento Demo (Offline)");
   }
 }
 
@@ -112,13 +141,13 @@ function ensureLocalDemoDataSeeded() {
 function getLocalItems<T>(collection: string): T[] {
   ensureLocalDemoDataSeeded();
   const key = `es_biz_${collection}_user_${currentUserId}`;
-  const data = localStorage.getItem(key);
+  const data = safeStorage.getItem(key);
   return data ? JSON.parse(data) : [];
 }
 
 function saveLocalItems<T>(collection: string, items: T[]) {
   const key = `es_biz_${collection}_user_${currentUserId}`;
-  localStorage.setItem(key, JSON.stringify(items));
+  safeStorage.setItem(key, JSON.stringify(items));
 }
 
 // ------------------ API SERVICES ------------------
@@ -602,12 +631,12 @@ export const apiService = {
   async resetDatabase(): Promise<{ success: boolean }> {
     if (isLocalMode) {
       // Clear localStorage specific tables and re-seed
-      localStorage.removeItem(`es_biz_insumos_user_${currentUserId}`);
-      localStorage.removeItem(`es_biz_recipes_user_${currentUserId}`);
-      localStorage.removeItem(`es_biz_products_user_${currentUserId}`);
-      localStorage.removeItem(`es_biz_transactions_user_${currentUserId}`);
-      localStorage.removeItem(`es_biz_clients_user_${currentUserId}`);
-      localStorage.removeItem(`es_biz_profile_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_insumos_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_recipes_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_products_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_transactions_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_clients_user_${currentUserId}`);
+      safeStorage.removeItem(`es_biz_profile_user_${currentUserId}`);
 
       ensureLocalDemoDataSeeded();
       return { success: true };
